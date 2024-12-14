@@ -1,0 +1,11 @@
+<div class="card-header">
+  {{ data.type|uppercase }}
+</div>
+
+<div class="card-body">
+  {{data.message}}
+
+  <div class="card-footer" style="text-align: center;">
+    <button (click)="snackbarRef.dismiss()" color="primary" mat-raised-button>{{data.buttonText}}</button>
+  </div>
+</div>
