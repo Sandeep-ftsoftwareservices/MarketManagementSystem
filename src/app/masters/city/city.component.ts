@@ -12,45 +12,44 @@ import {
   AbstractControl,
   ValidationErrors,
 } from '@angular/forms';
-import { ErrorStateMatcher } from '@angular/material/core';
-import { MatInputModule } from '@angular/material/input';
-import { MatSelectModule } from '@angular/material/select';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MyErrorStateMatcher } from '../../my-error-state-matcher';
-import { CommonModule } from '@angular/common';
 import { MatTableDataSource } from '@angular/material/table';
 import { catchError, EMPTY, map, Observable } from 'rxjs';
 import { MatPaginator } from '@angular/material/paginator';
 import { MatSort } from '@angular/material/sort';
-import { StateService } from './state.service';
 import { SnackBarNotifierService } from '../../shared/components/ui/snack-bar/snack-bar-notifier.service';
 import { MatDialog, MatDialogConfig } from '@angular/material/dialog';
 import { ConfirmationDialogBoxComponent } from '../../shared/components/ui/confirmation-dialog-box/confirmation-dialog-box.component';
-import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { Country } from '../country/country.component';
-export interface State {
+import { District } from '../district/district.component';
+import { CityService } from './city.service';
+import { State } from '../state/state.component';
+import { CountryService } from '../country/country.service';
+export interface City {
   id: number;
   name: string;
   shortName: string;
-  gstCode: string;
-  //stateCode: string;
+  code: string;
   status: boolean;
-  country: Country;
-  countryId:number;
-}
+  stateId:string;
+  state: State;
+  district: District[];
+  }
 @Component({
-  selector: 'app-state',
-  imports: [CommonModule,MatProgressSpinnerModule, MaterialModule, MatFormFieldModule, MatSelectModule, FormsModule, ReactiveFormsModule, MatInputModule],
-  templateUrl: './state.component.html',
-  styleUrl: './state.component.css'
+  selector: 'app-city',
+  imports: [MaterialModule,],
+  templateUrl: './city.component.html',
+  styleUrl: './city.component.css'
 })
-export class StateComponent {
+export class CityComponent {
   @ViewChild('formDirective')
   private formDirective!: FormGroupDirective;
   entityForm!: FormGroup;
-  entity!: State;
-  entities$!: Observable<State[]>;
-  ddlItems$!: Observable<Country[]>;
+  entity:any= {};
+  row:any={};
+  entities$!: Observable<City[]>;
+  districtDdlItems$!: Observable<District[]>;
+  stateDdlItems$!: Observable<State[]>;
+  countryDdlItems$!: Observable<Country[]>;
   isLoading = true;
   isUpdateMode = false;
   @ViewChild(MatPaginator)
@@ -59,55 +58,65 @@ export class StateComponent {
   sort!: MatSort;
 
   selectedValue:any|null;
-  displayedColumns: string[] = ['id', 'name', 'shortName', 'gstCode', 'country', 'status', 'actions'];
-  dataSource: MatTableDataSource<State> = new MatTableDataSource<State>([]);
+  displayedColumns: string[] = ['id', 'name', 'shortName','code', 'state','country', 'status', 'actions'];
+  dataSource: MatTableDataSource<City> = new MatTableDataSource<City>([]);
 
   ngOnInit() {
     this.initializeForm();
-    this.entity ={
-      id:0,
-      countryId:0,
-      name:'',
-      shortName:'',
-      gstCode:'',
-      country:{
-        id: 0,
-        name: '',
-        shortName: '',
-        code: '',
-        status: false,
-        state: []
-      },
-      status:false
-    }
-    this.getDdl();
+    this.getCountryDdl();
+    this.getStateDdl();
+    this.getDistrictDdl();
   }
   constructor(private fb: FormBuilder,
-    private service: StateService,
+    private service: CityService,
     private snackBarNotifierService: SnackBarNotifierService,
     private dialog: MatDialog,
   ) { }
 
   getControl(name: any): AbstractControl | null {
-
     return this.entityForm.get(name);
   }
-  getDdl(){
-    this.ddlItems$ = this.service.getEntityForDdl();
-  }
+
   initializeForm() {
     this.entityForm = this.fb.group({
       name: ['', [Validators.required, Validators.minLength(3), Validators.maxLength(45)]],
       shortName: ['', [Validators.required, Validators.minLength(1), Validators.maxLength(15)]],
-      gstCode: ['', [Validators.required, Validators.minLength(1), Validators.maxLength(7)]],
-      //stateCode: ['', [Validators.required, Validators.minLength(1), Validators.maxLength(7)]],
-      ddl: ['-1', [Validators.required]],
+      code: ['', [Validators.required, Validators.minLength(1), Validators.maxLength(7)]],
       status: [false],
+      countryDdl: ['-1', [Validators.required]],
+      stateDdl: ['-1', [Validators.required]],
+      //districtDdl: ['-1', [Validators.required]],
     });
   }
-  onChange(ddlValue:any)
-  {
 
+  ondistrictDllChange(districtId:any)
+  {
+    //find auto select state and country
+  }
+
+  onStateDllChange(stateId:any)
+  {
+    let c;
+    this.service.getCountryDdlId(stateId)
+    .subscribe(res=>{
+
+      this.entityForm.patchValue({
+        countryDdl: res[0].id});
+    });
+  }
+  onCountryDdlChange(countryId:any)
+  {
+    this.stateDdlItems$ = this.service.getStateDdlList(countryId);
+
+  }
+  getCountryDdl(){
+    this.countryDdlItems$ = this.service.getCountryDdlList(null);
+  }
+  getStateDdl(){
+    this.stateDdlItems$ = this.service.getStateDdlList(null);
+  }
+  getDistrictDdl(){
+    this.districtDdlItems$ = this.service.getDistrictDdlList(null);
   }
   ngAfterViewInit() {
     this.entities$ = this.service.getEntities();
@@ -134,9 +143,9 @@ applyFilter(event: Event) {
 
       this.entity.name = form.get('name')?.value;
       this.entity.shortName = form.get('shortName')?.value;
-      this.entity.gstCode = form.get('gstCode')?.value;
+      this.entity.stateId = form.get('stateDdl')?.value;
+      this.entity.code = form.get('code')?.value;
       this.entity.status = form.get('status')?.value;
-      this.entity.countryId = form.get('ddl')?.value;
 
       this.service.createEntity(this.entity)
         .pipe(
@@ -187,15 +196,18 @@ applyFilter(event: Event) {
   edit(row: any) {
     console.log(row);
     this.service.getEntityById(row.id).subscribe(response => {
-      this.entity = response as State;
+      this.entity = response as City;
     });
+    this.getCountryDdl();
+    this.getStateDdl();
+    this.row = row;
     this.entityForm.patchValue({
       name: row.name,
       shortName: row.shortName,
-      gstCode: row.gstCode,
-      //stateCode: row.stateCode,
+      code: row.code,
       status: row.status,
-      ddl:row.countryId
+      stateDdl:row.stateId,
+      countryDdl:row.state.countryId,
     });
     this.isUpdateMode = true;
   }
@@ -203,10 +215,11 @@ applyFilter(event: Event) {
     if (form.valid) {
       this.entity.name = form.controls['name'].value;
       this.entity.shortName = form.controls['shortName'].value;
-      this.entity.gstCode = form.controls['gstCode'].value;
-      //this.entity.stateCode = form.controls['stateCode'].value;
+      this.entity.code = form.controls['code'].value;
+      //this.entity.cityCode = form.controls['cityCode'].value;
       this.entity.status = form.controls['status'].value;
-      this.entity.countryId = form.controls['ddl'].value;
+      this.entity.stateId = form.controls['stateDdl'].value;
+      this.entity.countryId = form.controls['countryDdl'].value;
       //this.entity = form.value;
       this.service.updateEntity(this.entity).pipe(
         catchError(error => {
@@ -227,11 +240,15 @@ applyFilter(event: Event) {
       ).subscribe
         (
           (response) => {
+            //response.district = this.row.district;
+            //response.state = this.row.state;
+
             const index = this.dataSource.filteredData.findIndex(x => x.id == this.entity.id);
             this.dataSource.data.splice(index, 1, response);
             this.dataSource.data = this.dataSource.data;
             this.snackBarNotifierService.showNotification(':: Successfully updated!!!', 'Dismiss', 'success')
             this.clear();
+            //this.row = null;
             this.isUpdateMode = false;
           },
           (error) => {

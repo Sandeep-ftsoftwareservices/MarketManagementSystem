@@ -24,11 +24,12 @@ import { ConfirmationDialogBoxComponent } from '../../shared/components/ui/confi
 declare var $: any;
 
 export interface Country {
+  [x: string]: any;
   id: number;
   name: string;
   shortName: string;
   code: string;
-  isActive: boolean;
+  status: boolean;
   state: [];
 }
 
@@ -37,7 +38,7 @@ export const errorMessages: { [key: string]: string } = {
   Name: 'Name must be between 3 and 45 characters',
   ShortName: 'ShortName must be between 1 and 15 characters',
   Code: 'Code must be between 1 and 4 characters',
-  IsActive: 'Password must be between 7 and 15 characters, and contain at least one number and special character',
+  Status: 'Password must be between 7 and 15 characters, and contain at least one number and special character',
 };
 @Component({
   selector: 'app-country',
@@ -67,11 +68,11 @@ export class CountryComponent implements AfterViewInit, OnInit {
       name: ['', [Validators.required, Validators.minLength(3), Validators.maxLength(45)]],
       shortName: ['', [Validators.required, Validators.min(1), Validators.maxLength(15)]],
       code: ['', [Validators.required, Validators.minLength(1), Validators.maxLength(7)]],
-      isActive: [false]
+      status: [false]
     });
   }
 
-  displayedColumns: string[] = ['id', 'name', 'shortName', 'code', 'isActive', 'actions'];
+  displayedColumns: string[] = ['id', 'name', 'shortName', 'code', 'status', 'actions'];
   dataSource: MatTableDataSource<Country> = new MatTableDataSource<Country>([]);;
 
   @ViewChild(MatPaginator)
@@ -137,7 +138,7 @@ export class CountryComponent implements AfterViewInit, OnInit {
             this.entities$.subscribe(datasource => {
               this.dataSource.data.splice(0, 0, response);
               this.dataSource.data = this.dataSource.data;
-              this.snackBarNotifierService.showNotification(':: Successfully saved!!!', 'Dismiss', 'success')
+              this.snackBarNotifierService.showNotification(':: Successfully saved!!!', 'OK', 'success')
               this.clear();
             },
               (error) => { },
@@ -165,7 +166,7 @@ export class CountryComponent implements AfterViewInit, OnInit {
       name: row.name,
       shortName: row.shortName,
       code: row.code,
-      isActive: row.isActive,
+      status: row.status,
     });
     this.isUpdateMode = true;
   }
@@ -174,7 +175,7 @@ export class CountryComponent implements AfterViewInit, OnInit {
       this.entity.name = form.controls['name'].value;
       this.entity.shortName = form.controls['shortName'].value;
       this.entity.code = form.controls['code'].value;
-      this.entity.isActive = form.controls['isActive'].value;
+      this.entity.status = form.controls['status'].value;
       //this.entity = form.value;
       this.service.updateEntity(this.entity).pipe(
         catchError(error => {
@@ -198,7 +199,7 @@ export class CountryComponent implements AfterViewInit, OnInit {
             const index = this.dataSource.filteredData.findIndex(x => x.id == this.entity.id);
             this.dataSource.data.splice(index, 1, response);
             this.dataSource.data = this.dataSource.data;
-            this.snackBarNotifierService.showNotification(':: Successfully updated!!!', 'Dismiss', 'success')
+            this.snackBarNotifierService.showNotification(':: Successfully updated!!!', 'OK', 'success')
             this.clear();
             this.isUpdateMode = false;
           },
@@ -235,7 +236,7 @@ export class CountryComponent implements AfterViewInit, OnInit {
             //   (u: Country) => u.id != entity.id
 
             // );
-            this.snackBarNotifierService.showNotification(':: Successfully deleted!!!', 'Dismiss', 'success');
+            this.snackBarNotifierService.showNotification(':: Successfully deleted!!!', 'OK', 'success');
 
           },
           (error) => {

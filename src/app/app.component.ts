@@ -8,12 +8,16 @@ import {MatPaginator, MatPaginatorModule} from '@angular/material/paginator';
 import {MatTableDataSource, MatTableModule} from '@angular/material/table';
 import { HttpClient, HttpClientModule } from '@angular/common/http';
 import { CountryService } from './masters/country/country.service';
+import { StateService } from './masters/state/state.service';
+import { MaterialModule } from './material/material.module';
+import { PasswordStrengthDirective } from './directives/password-strength.directive';
+import { CityService } from './masters/city/city.service';
 @Component({
   selector: 'app-root',
-  providers:[CountryService],
-  imports: [RouterOutlet, MatTableModule, MatPaginatorModule,
+  providers:[CountryService,StateService,CityService,PasswordStrengthDirective],
+  imports: [RouterOutlet,MaterialModule, MatTableModule, MatPaginatorModule,
     MatToolbarModule, MatButtonModule, MatIconModule,RouterLink,HttpClientModule ],
-  templateUrl: './app.component.html',
+    templateUrl: './app.component.html',
   styleUrl: './app.component.css'
 })
 export class AppComponent implements AfterViewInit {

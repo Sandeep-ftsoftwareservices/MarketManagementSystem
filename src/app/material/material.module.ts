@@ -11,17 +11,20 @@ import { MatSortModule } from '@angular/material/sort';
 import { MatTableModule } from '@angular/material/table';
 import { MatSelectModule } from '@angular/material/select';
 import { MatSnackBar, MatSnackBarModule} from '@angular/material/snack-bar'
-
-
+import {MatSidenavModule} from '@angular/material/sidenav';
+import { MatToolbarModule } from '@angular/material/toolbar';
+import {MatBadgeModule} from '@angular/material/badge'
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 @NgModule({
   declarations: [],
-  imports: [
+  imports: [ReactiveFormsModule,FormsModule,MatProgressSpinnerModule,MatBadgeModule,MatSidenavModule,MatToolbarModule,
     CommonModule,MatSelectModule,
     MatCardModule, MatFormFieldModule, MatInputModule
     , MatCheckboxModule, MatIconModule,MatSnackBarModule
     , MatButtonModule, MatFormFieldModule, MatInputModule, MatTableModule, MatSortModule, MatPaginatorModule
   ],
-  exports:[MatSelectModule,MatCardModule, MatFormFieldModule, MatInputModule
+  exports:[ReactiveFormsModule,FormsModule,CommonModule,MatProgressSpinnerModule,MatBadgeModule,MatToolbarModule,MatSelectModule,MatCardModule, MatFormFieldModule, MatInputModule
     , MatCheckboxModule, MatIconModule,MatSnackBarModule
     , MatButtonModule, MatFormFieldModule, MatInputModule, MatTableModule, MatSortModule, MatPaginatorModule]
 })
